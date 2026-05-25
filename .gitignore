@@ -1,0 +1,11 @@
+# 가상환경 구성 폴더 및 파일 제외
+Lib/
+Scripts/
+include/
+pyvenv.cfg
+
+# 파이썬 캐시 제외
+__pycache__/
+*.pyc
+
+.env

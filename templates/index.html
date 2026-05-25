@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADGEN — AI 광고 크리에이터</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0a0a;--ink2:#141414;--ink3:#1e1e1e;--surface:#242424;
+  --line:rgba(255,255,255,0.08);--line2:rgba(255,255,255,0.14);
+  --muted:#666;--muted2:#999;--light:#e8e4dc;--white:#f5f3ef;
+  --accent:#c8ff00;--accent2:#a8d900;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'DM Sans',-apple-system,sans-serif;
+  --radius:4px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--ink);color:var(--white);min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;border-bottom:1px solid var(--line);background:rgba(10,10,10,0.88);backdrop-filter:blur(12px)}
+.logo{font-family:var(--serif);font-size:20px;font-weight:900;letter-spacing:0.12em;color:var(--white);text-transform:uppercase}
+.logo span{color:var(--accent)}
+.header-tag{font-size:11px;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 48px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 70% 40%,rgba(200,255,0,0.04) 0%,transparent 60%);pointer-events:none}
+.hero-deco{position:absolute;top:120px;right:48px;width:1px;height:calc(100% - 200px);background:linear-gradient(to bottom,transparent,var(--line2) 30%,var(--line2) 70%,transparent)}
+.hero-eyebrow{font-size:11px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.hero-eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--accent)}
+.hero-headline{font-family:var(--serif);font-size:clamp(52px,7vw,100px);font-weight:900;line-height:0.95;letter-spacing:-0.02em;color:var(--white);max-width:800px;margin-bottom:40px}
+.hero-headline em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:15px;font-weight:300;color:var(--muted2);max-width:420px;line-height:1.8;margin-bottom:48px}
+.hero-cta{display:inline-flex;align-items:center;gap:12px;background:var(--accent);color:var(--ink);font-size:13px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;padding:16px 32px;border:none;border-radius:2px;cursor:pointer;transition:all 0.2s}
+.hero-cta:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* WORKSPACE */
+.workspace{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;border-top:1px solid var(--line)}
+
+/* INPUT PANEL */
+.panel-input{padding:64px 48px;border-right:1px solid var(--line);position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.panel-input::-webkit-scrollbar{width:4px}
+.panel-input::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
+.panel-label{font-size:10px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);margin-bottom:40px;display:flex;align-items:center;gap:12px}
+.panel-label::after{content:'';flex:1;height:1px;background:var(--line)}
+.field{margin-bottom:32px}
+.field-label{font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.field-label .req{color:var(--accent);font-size:14px;letter-spacing:0}
+input[type="text"],textarea,select{width:100%;background:var(--ink2);border:1px solid var(--line2);border-radius:var(--radius);color:var(--white);font-family:var(--sans);font-size:14px;font-weight:300;padding:14px 18px;transition:border-color 0.2s,background 0.2s;outline:none;-webkit-appearance:none}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);background:var(--ink3)}
+textarea{height:88px;resize:none;line-height:1.6}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+select option{background:var(--ink2)}
+
+/* CHIPS */
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 16px;border:1px solid var(--line2);border-radius:2px;font-size:12px;color:var(--muted2);cursor:pointer;transition:all 0.15s;background:transparent;user-select:none}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.active{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:500}
+
+/* STYLE CARDS */
+.style-hint{font-size:12px;color:var(--muted);padding:20px;border:1px dashed var(--line2);border-radius:var(--radius);text-align:center;line-height:1.8}
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.style-card{padding:16px;border:1px solid var(--line2);border-radius:var(--radius);cursor:pointer;transition:all 0.15s;background:var(--ink2);position:relative;overflow:hidden}
+.style-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--accent);transition:height 0.2s}
+.style-card:hover:not(.disabled)::before,.style-card.selected::before{height:100%}
+.style-card:hover:not(.disabled){border-color:rgba(200,255,0,0.3)}
+.style-card.selected{border-color:var(--accent);background:rgba(200,255,0,0.05)}
+.style-card.disabled{opacity:0.2;pointer-events:none}
+.style-icon{font-size:18px;margin-bottom:8px;display:block}
+.style-name{font-size:12px;font-weight:500;color:var(--white);margin-bottom:4px}
+.style-desc{font-size:10px;color:var(--muted);letter-spacing:0.05em}
+
+/* GENERATE BUTTON */
+.btn-generate{width:100%;background:var(--accent);color:var(--ink);border:none;border-radius:2px;padding:16px;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-generate:hover:not(:disabled){background:var(--accent2);transform:translateY(-1px)}
+.btn-generate:disabled{background:var(--surface);color:var(--muted);cursor:not-allowed;transform:none}
+
+/* RESULT PANEL */
+.panel-result{padding:64px 48px;min-height:calc(100vh - 64px);display:none}
+.status-row{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.status-dot.done{animation:none}
+.status-text{font-size:11px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent)}
+.result-brand{font-family:var(--serif);font-size:clamp(28px,3vw,42px);font-weight:700;line-height:1.1;color:var(--white);margin-bottom:8px}
+.result-brand span{font-style:italic;color:var(--accent)}
+.info-table{border-top:1px solid var(--line);margin:28px 0}
+.info-row{display:grid;grid-template-columns:100px 1fr;padding:14px 0;border-bottom:1px solid var(--line);gap:16px;align-items:start}
+.info-key{font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.info-val{font-size:13px;font-weight:300;color:var(--light);line-height:1.5}
+.media-label{font-size:10px;font-weight:500;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.media-label::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* VIDEO PLAYER */
+.video-wrap{width:100%;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line2);background:#000;position:relative;margin-bottom:28px}
+.video-waiting{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:12px;color:var(--muted);letter-spacing:0.1em}
+.video-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+
+/* 커스텀 컨트롤바: 반투명 검정, 각진 모서리 */
+.ctrl-bar{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);display:none;align-items:center;gap:10px;padding:8px 14px}
+.ctrl-btn{background:none;border:none;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;padding:0;width:18px;text-align:center;flex-shrink:0}
+.ctrl-time{font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:0.05em;white-space:nowrap;min-width:32px}
+.ctrl-progress{flex:1;height:3px;background:rgba(255,255,255,0.2);cursor:pointer;position:relative}
+.ctrl-fill{height:100%;background:rgba(255,255,255,0.55);width:0%;pointer-events:none}
+
+.spinner{width:18px;height:18px;border:1px solid var(--line2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BUTTONS */
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.btn-dl{background:var(--accent);color:var(--ink);border:none;border-radius:2px;padding:13px;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;display:none}
+.btn-dl:hover{background:var(--accent2)}
+.btn-reset{background:transparent;color:var(--muted2);border:1px solid var(--line2);border-radius:2px;padding:13px;font-family:var(--sans);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
+.btn-reset:hover{border-color:var(--muted);color:var(--white)}
+
+/* EMPTY STATE */
+.panel-empty{height:calc(100vh - 64px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:64px 48px}
+.panel-empty.hidden{display:none}
+.empty-number{font-family:var(--serif);font-size:120px;font-weight:900;color:var(--ink3);line-height:1;margin-bottom:24px;user-select:none}
+.empty-text{font-size:13px;font-weight:300;color:var(--muted);line-height:1.8;max-width:280px}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:24px 48px;display:flex;align-items:center;justify-content:space-between}
+.footer-copy{font-size:11px;color:var(--muted);letter-spacing:0.1em}
+.footer-tag{font-size:11px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase}
+
+@media(max-width:900px){
+  .workspace{grid-template-columns:1fr}
+  .panel-input{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .hero,.panel-input,.panel-result,footer{padding-left:24px;padding-right:24px}
+  .panel-empty{padding:40px 24px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">AD<span>.</span>GEN</div>
+  <div class="header-tag">AI Creative Pipeline</div>
+</header>
+
+<section class="hero">
+  <div class="hero-deco"></div>
+  <div class="hero-eyebrow">AI-Powered Ad Creator</div>
+  <h1 class="hero-headline">Create<br><em>Brilliant</em><br>Ads.</h1>
+  <p class="hero-sub">브랜드 정보 입력만으로<br>나레이션 · 스틸컷 · 광고 영상을<br>AI가 자동 생성합니다.</p>
+  <button class="hero-cta" onclick="document.querySelector('.workspace').scrollIntoView({behavior:'smooth'})">
+    시작하기
+    <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</section>
+
+<div class="workspace">
+
+  <!-- 입력 패널 -->
+  <div class="panel-input">
+    <div class="panel-label">Campaign Brief</div>
+
+    <div class="field">
+      <div class="field-label">Brand Name <span class="req">*</span></div>
+      <input type="text" id="brand" placeholder="예: 애플, 나이키, 무인양품">
+    </div>
+
+    <div class="field">
+      <div class="field-label">Concept Keywords <span class="req">*</span></div>
+      <textarea id="concept" placeholder="예: 심플, 미니멀, 자연, 건강&#10;핵심 키워드를 자유롭게 입력하세요"></textarea>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Target Audience <span class="req">*</span></div>
+      <div class="chip-row">
+        <div class="chip" data-target="Z세대"   onclick="selectTarget(this)">10–20대 Z세대</div>
+        <div class="chip" data-target="밀레니얼" onclick="selectTarget(this)">20–30대 밀레니얼</div>
+        <div class="chip" data-target="직장인"   onclick="selectTarget(this)">30–40대 직장인</div>
+        <div class="chip" data-target="가족"     onclick="selectTarget(this)">40–50대 가족</div>
+        <div class="chip" data-target="B2B"      onclick="selectTarget(this)">기업 · B2B</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Creative Style <span class="req">*</span></div>
+      <div class="style-hint" id="styleHint">타겟을 먼저 선택하면<br>추천 스타일이 활성화됩니다</div>
+      <div class="style-grid" id="styleGrid" style="display:none;">
+        <div class="style-card" data-style="힙하고 트렌디한"        data-targets="Z세대,밀레니얼"       onclick="selectStyle(this)">
+          <span class="style-icon">🎵</span><div class="style-name">힙하고 트렌디한</div><div class="style-desc">SNS 숏폼 · 바이럴</div>
+        </div>
+        <div class="style-card" data-style="모던하고 깔끔한"        data-targets="밀레니얼,직장인,B2B"  onclick="selectStyle(this)">
+          <span class="style-icon">🏙️</span><div class="style-name">모던하고 깔끔한</div><div class="style-desc">프리미엄 브랜드</div>
+        </div>
+        <div class="style-card" data-style="시네마틱하고 웅장한"    data-targets="밀레니얼,직장인,가족" onclick="selectStyle(this)">
+          <span class="style-icon">🎬</span><div class="style-name">시네마틱하고 웅장한</div><div class="style-desc">브랜드 필름 · TV</div>
+        </div>
+        <div class="style-card" data-style="따뜻하고 감성적인"      data-targets="밀레니얼,가족"        onclick="selectStyle(this)">
+          <span class="style-icon">🌿</span><div class="style-name">따뜻하고 감성적인</div><div class="style-desc">라이프스타일 · 식품</div>
+        </div>
+        <div class="style-card" data-style="유머러스하고 가벼운"    data-targets="Z세대,밀레니얼,가족"  onclick="selectStyle(this)">
+          <span class="style-icon">😄</span><div class="style-name">유머러스하고 가벼운</div><div class="style-desc">대중 소비재 · 식음료</div>
+        </div>
+        <div class="style-card" data-style="전문적이고 신뢰감 있는" data-targets="직장인,B2B"           onclick="selectStyle(this)">
+          <span class="style-icon">📊</span><div class="style-name">전문적이고 신뢰감</div><div class="style-desc">금융 · 의료 · B2B</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Narration Voice</div>
+      <select id="voice">
+        <option value="Nova">Nova — 차분하고 자연스러운</option>
+        <option value="Alloy">Alloy — 중성적이고 선명한</option>
+        <option value="Echo">Echo — 깊고 안정감 있는</option>
+      </select>
+    </div>
+
+    <button class="btn-generate" id="submitBtn" onclick="startGeneration()">
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Generate Campaign
+    </button>
+  </div>
+
+  <!-- 빈 상태 -->
+  <div class="panel-empty" id="panelEmpty">
+    <div class="empty-number">01</div>
+    <p class="empty-text">좌측 브리프를 작성하고<br>Generate를 누르면<br>AI가 광고 캠페인을 생성합니다.</p>
+  </div>
+
+  <!-- 결과 패널 -->
+  <div class="panel-result" id="panelResult">
+    <div class="status-row">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="status-text" id="statusText">Pipeline Running</div>
+    </div>
+    <div class="result-brand" id="resTitle">Campaign<br><span>Output</span></div>
+
+    <div class="info-table">
+      <div class="info-row">
+        <div class="info-key">Narration</div>
+        <div class="info-val" id="resNarration">—</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Style</div>
+        <div class="info-val" id="resStyle">—</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Voice</div>
+        <div class="info-val" id="resVoice">—</div>
+      </div>
+    </div>
+
+    <div class="media-label">Video Preview</div>
+    <div class="video-wrap" id="videoWrap">
+      <!-- 렌더링 대기 상태 -->
+      <div class="video-waiting" id="videoWaiting">
+        <div class="spinner"></div>Rendering...
+      </div>
+
+      <!-- 영상 플레이어 (음성 합성된 final.mp4) -->
+      <video id="videoPlayer" playsinline preload="auto"></video>
+
+      <!-- 커스텀 컨트롤바: 반투명 검정, 각진 모서리 -->
+      <div class="ctrl-bar" id="ctrlBar">
+        <button class="ctrl-btn" id="ctrlPlay" onclick="togglePlay()">&#9654;</button>
+        <span class="ctrl-time" id="ctrlTime">0:00</span>
+        <div class="ctrl-progress" id="ctrlProgress" onclick="seekVideo(event)">
+          <div class="ctrl-fill" id="ctrlFill"></div>
+        </div>
+        <span class="ctrl-time" id="ctrlDur">0:00</span>
+        <button class="ctrl-btn" id="ctrlMute" onclick="toggleMute()">&#128266;</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-dl" id="downloadBtn" onclick="downloadVideo()">↓ Download Video</button>
+      <button class="btn-reset" onclick="location.reload()">↺ New Campaign</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-copy">© 2025 ADGEN. AI Creative Pipeline.</div>
+  <div class="footer-tag">Powered by Claude · GPT · TTS · LTX-Video</div>
+</footer>
+
+<script>
+// ─── 전역 변수 ──────────────────────────────────────────────────────────────
+let selectedTarget  = "";
+let selectedStyle   = "";
+let pollingInterval = null;
+let currentBrand    = "";
+let currentAudioUrl = "";
+
+// ─── 타겟 선택 ──────────────────────────────────────────────────────────────
+function selectTarget(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedTarget = el.dataset.target;
+  selectedStyle  = "";
+  document.getElementById('styleHint').style.display = "none";
+  document.getElementById('styleGrid').style.display = "grid";
+  document.querySelectorAll('.style-card').forEach(card => {
+    const ok = card.dataset.targets.split(',').includes(selectedTarget);
+    card.classList.toggle('disabled', !ok);
+    if (!ok) card.classList.remove('selected');
+  });
+}
+
+// ─── 스타일 선택 ────────────────────────────────────────────────────────────
+function selectStyle(el) {
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedStyle = el.dataset.style;
+}
+
+// ─── 광고 생성 시작 ─────────────────────────────────────────────────────────
+async function startGeneration() {
+  const brand   = document.getElementById('brand').value.trim();
+  const concept = document.getElementById('concept').value.trim();
+  if (!brand || !concept) { alert("브랜드명과 키워드를 입력하세요."); return; }
+  if (!selectedTarget)    { alert("타겟 고객층을 선택하세요."); return; }
+  if (!selectedStyle)     { alert("영상 스타일을 선택하세요."); return; }
+
+  currentBrand = brand;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;margin:0;border-width:1px"></div> Generating...';
+
+  document.getElementById('panelEmpty').classList.add('hidden');
+  document.getElementById('panelResult').style.display  = "block";
+  document.getElementById('videoPlayer').style.display  = "none";
+  document.getElementById('videoWaiting').style.display = "flex";
+  document.getElementById('ctrlBar').style.display      = "none";
+  document.getElementById('downloadBtn').style.display  = "none";
+
+  const params = new URLSearchParams({
+    brand, concept,
+    mood:     selectedStyle,
+    target:   selectedTarget,
+    style:    selectedStyle,
+    duration: "15초",
+    voice:    document.getElementById('voice').value,
+    bgm:      false
+  });
+
+  try {
+    const res  = await fetch(`/create_ad?${params}`);
+    const data = await res.json();
+
+    if (res.ok && data.status === "processing") {
+      const info = data.generation_info;
+      document.getElementById('resTitle').innerHTML       = `${info.brand}<br><span>Campaign Output</span>`;
+      document.getElementById('resNarration').textContent = info.narration_text;
+      document.getElementById('resStyle').textContent     = info.style;
+      document.getElementById('resVoice').textContent     = info.voice;
+      document.getElementById('statusText').textContent   = "Video Rendering...";
+
+      currentAudioUrl = data.audio_download_url || "";
+      startVideoPolling(data.video_task_id);
+    } else {
+      alert("생성 실패: " + JSON.stringify(data));
+      resetBtn(btn);
+    }
+  } catch (e) {
+    console.error(e);
+    alert("서버 오류가 발생했습니다.");
+    resetBtn(btn);
+  }
+}
+
+// ─── 영상 폴링 ──────────────────────────────────────────────────────────────
+function startVideoPolling(taskId) {
+  pollingInterval = setInterval(async () => {
+    try {
+      const params = new URLSearchParams({
+        task_id:   taskId,
+        brand:     currentBrand,
+        audio_url: currentAudioUrl
+      });
+      const res  = await fetch(`/check_video?${params}`);
+      const data = await res.json();
+
+      if (data.status === "success") {
+        clearInterval(pollingInterval);
+
+        const vp = document.getElementById('videoPlayer');
+
+        // 영상 로드: #t=0.1 로 첫 프레임(0.1초) 썸네일 강제 표시
+        vp.src = data.video_url + "?nocache=" + Date.now() + "#t=0.1";
+        vp.style.display = "block";
+        document.getElementById('videoWaiting').style.display = "none";
+        document.getElementById('ctrlBar').style.display      = "flex";
+        document.getElementById('downloadBtn').style.display  = "block";
+        document.getElementById('statusDot').classList.add('done');
+        document.getElementById('statusText').textContent = "Campaign Complete";
+
+        // 영상 메타데이터 로드 후 총 재생시간 표시
+        vp.addEventListener('loadedmetadata', () => {
+          document.getElementById('ctrlDur').textContent = formatTime(vp.duration);
+        });
+
+        // 재생 진행바 업데이트
+        vp.addEventListener('timeupdate', () => {
+          if (!vp.duration) return;
+          const pct = (vp.currentTime / vp.duration) * 100;
+          document.getElementById('ctrlFill').style.width       = pct + '%';
+          document.getElementById('ctrlTime').textContent       = formatTime(vp.currentTime);
+        });
+
+        // 재생 완료 시 버튼 초기화
+        vp.addEventListener('ended', () => {
+          document.getElementById('ctrlPlay').innerHTML = '&#9654;';
+        });
+
+      } else if (data.status === "failed") {
+        clearInterval(pollingInterval);
+        document.getElementById('statusText').textContent = "Rendering Failed";
+      }
+    } catch (e) { console.error(e); }
+  }, 5000);
+}
+
+// ─── 커스텀 플레이어 컨트롤 ─────────────────────────────────────────────────
+function togglePlay() {
+  const vp  = document.getElementById('videoPlayer');
+  const btn = document.getElementById('ctrlPlay');
+  if (vp.paused) { vp.play(); btn.innerHTML = '&#9646;&#9646;'; }
+  else           { vp.pause(); btn.innerHTML = '&#9654;'; }
+}
+
+function toggleMute() {
+  const vp  = document.getElementById('videoPlayer');
+  const btn = document.getElementById('ctrlMute');
+  vp.muted  = !vp.muted;
+  btn.innerHTML = vp.muted ? '&#128264;' : '&#128266;';
+}
+
+function seekVideo(e) {
+  const vp  = document.getElementById('videoPlayer');
+  const bar = document.getElementById('ctrlProgress');
+  const pct = e.offsetX / bar.offsetWidth;
+  if (vp.duration) vp.currentTime = pct * vp.duration;
+}
+
+function formatTime(sec) {
+  if (!sec || isNaN(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, '0');
+  return m + ':' + s;
+}
+
+// ─── 다운로드 ────────────────────────────────────────────────────────────────
+function downloadVideo() {
+  const vp = document.getElementById('videoPlayer');
+  if (!vp.src) return;
+  const safeBrand = currentBrand.replace(/\s+/g, '_') || 'ADGEN';
+  const url = vp.src.split('#')[0].split('?')[0];  // #t=0.1, ?nocache 제거
+  const a = document.createElement('a');
+  a.href     = url;
+  a.download = `${safeBrand}_${new Date().toISOString().slice(0,10)}.mp4`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ─── 버튼 복구 ──────────────────────────────────────────────────────────────
+function resetBtn(btn) {
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Generate Campaign';
+}
+</script>
+</body>
+</html>
